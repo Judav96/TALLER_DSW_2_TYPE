@@ -1,54 +1,52 @@
 import { series } from "./data.js";
-import { Serie } from "./models/series.js";
+import { Serie } from "./models/serie.js";
 
-const seriesTable: HTMLElement = document.getElementById("series-table-body")!;
-const averageSeasonsElm: HTMLElement = document.getElementById("average-seasons")!;
-const cardContainer: HTMLElement = document.getElementById("card-container")!;
+const seriesTableBody: HTMLElement = document.getElementById("series-table-body")!;
+const averageElement: HTMLElement = document.getElementById("average-seasons")!;
+const detailElement: HTMLElement = document.getElementById("series-detail")!;
 
-function showSeries(seriesList: Serie[]): void {
-  let totalSeasons = 0;
-  seriesList.forEach((serie) => {
-    const trElement = document.createElement("tr");
+function renderSeries(seriesList: Serie[]): void {
+  seriesTableBody.innerHTML = "";
 
-    trElement.innerHTML = `
+  for (const serie of seriesList) {
+    const row = document.createElement("tr");
+    row.innerHTML = `
       <td>${serie.id}</td>
       <td><a href="#" class="serie-link" data-id="${serie.id}">${serie.name}</a></td>
       <td>${serie.channel}</td>
       <td>${serie.seasons}</td>
     `;
-    seriesTable.appendChild(trElement);
-    totalSeasons += serie.seasons;
-  });
+    seriesTableBody.appendChild(row);
+  }
 
-  const average = totalSeasons / seriesList.length;
-  averageSeasonsElm.textContent = `Seasons average: ${average.toFixed(1)}`;
-
-  addClickEvents();
-}
-
-function addClickEvents(): void {
   const links = document.querySelectorAll(".serie-link");
   links.forEach((link) => {
     link.addEventListener("click", (event) => {
       event.preventDefault();
       const id = Number((event.target as HTMLElement).getAttribute("data-id"));
-      const serie = series.find((s) => s.id === id);
-      if (serie) showSerieDetail(serie);
+      const selected = series.find((s) => s.id === id);
+      if (selected) showDetail(selected);
     });
   });
 }
 
-function showSerieDetail(serie: Serie): void {
-  cardContainer.innerHTML = `
-    <div class="card" style="width: 20rem;">
-      <img src="${serie.poster}" class="card-img-top" alt="${serie.name}">
+function showDetail(serie: Serie): void {
+  detailElement.innerHTML = `
+    <div class="card">
+      <img src="${serie.image}" class="card-img-top" alt="${serie.name}">
       <div class="card-body">
         <h5 class="card-title">${serie.name}</h5>
         <p class="card-text">${serie.description}</p>
-        <a href="${serie.link}" target="_blank" class="card-link">${serie.link}</a>
+        <a href="${serie.link}" target="_blank" class="btn btn-primary">Ver más</a>
       </div>
     </div>
   `;
 }
 
-showSeries(series);
+function getAverageSeasons(seriesList: Serie[]): number {
+  const total = seriesList.reduce((acc, serie) => acc + serie.seasons, 0);
+  return total / seriesList.length;
+}
+
+renderSeries(series);
+averageElement.textContent = getAverageSeasons(series).toFixed(2);
